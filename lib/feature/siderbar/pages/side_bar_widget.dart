@@ -57,7 +57,7 @@ class _SidebarWidgetsState extends State<SideBarWidget> {
                   return Container(
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? Colors.white.withOpacity(0.15)
+                          ? AppColor.primarySwatch.shade200
                           : Colors.transparent,
                       borderRadius: BorderRadius.circular(8),
                     ),

@@ -60,10 +60,7 @@ class _TodoWidgetsState extends ConsumerState<TodoWidgets> {
     });
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('To Do Board'),
-        backgroundColor: AppColor.primarySwatch.shade100,
-      ),
+      appBar: AppBar(title: const Text('To Do Board')),
       body: Padding(
         padding: const EdgeInsets.all(10),
         child: AppFlowyBoard(
@@ -120,7 +117,7 @@ class _TodoWidgetsState extends ConsumerState<TodoWidgets> {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.8),
+                    color: Colors.white,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -192,7 +189,7 @@ class _TodoWidgetsState extends ConsumerState<TodoWidgets> {
           borderRadius: BorderRadius.circular(8.0),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.2),
+              color: Colors.grey,
               spreadRadius: 1,
               blurRadius: 3,
               offset: const Offset(0, 2),
