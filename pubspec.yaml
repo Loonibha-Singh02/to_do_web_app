@@ -2,7 +2,7 @@ name: to_do_web_app
 description: "A new Flutter project."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
 # The following defines the version and build number for your application.
 # A version number is three numbers separated by dots, like 1.2.43
@@ -34,6 +34,15 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
+  appflowy_board: ^0.1.2
+  riverpod: ^2.6.1
+  flutter_riverpod: ^2.6.1
+  date_field: ^6.0.3+1
+  flutter_screenutil: ^5.9.3
+  firebase_core: ^3.15.2
+  firebase_database: ^11.3.10
+  shared_preferences: ^2.5.3
+  intl: ^0.20.2
 
 dev_dependencies:
   flutter_test:
@@ -51,7 +60,6 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
-
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
@@ -73,10 +81,10 @@ flutter:
   # "family" key with the font family name, and a "fonts" key with a
   # list giving the asset and other descriptors for the font. For
   # example:
-  # fonts:
-  #   - family: Schyler
-  #     fonts:
-  #       - asset: fonts/Schyler-Regular.ttf
+  fonts:
+    - family: RobotoCondensed
+      fonts:
+        - asset: assets/fonts/RobotoCondensed-VariableFont_wght.ttf
   #       - asset: fonts/Schyler-Italic.ttf
   #         style: italic
   #   - family: Trajan Pro
