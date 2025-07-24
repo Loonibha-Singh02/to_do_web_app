@@ -13,9 +13,10 @@ class FirebaseTodoServices {
     DateTime? startDate,
     DateTime? dueDate,
     String? priority,
+    String? desc,
   }) async {
     try {
-      final newRef = _tasksRef.push(); 
+      final newRef = _tasksRef.push();
       final task = TaskModel(
         id: newRef.key!,
         title: title,
@@ -23,6 +24,7 @@ class FirebaseTodoServices {
         startDate: startDate,
         dueDate: dueDate,
         priority: priority,
+        desc: desc,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       );
@@ -63,6 +65,7 @@ class FirebaseTodoServices {
     DateTime? startDate,
     DateTime? dueDate,
     String? priority,
+    String? desc,
   }) async {
     try {
       final updateData = {'updatedAt': DateTime.now().toIso8601String()};
@@ -74,6 +77,7 @@ class FirebaseTodoServices {
       }
       if (dueDate != null) updateData['dueDate'] = dueDate.toIso8601String();
       if (priority != null) updateData['priority'] = priority;
+      if (desc != null) updateData['desc'] = desc;
 
       await _tasksRef.child(taskId).update(updateData);
     } catch (e) {

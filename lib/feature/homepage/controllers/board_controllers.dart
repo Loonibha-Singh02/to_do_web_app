@@ -137,6 +137,7 @@ class BoardController {
     required String title,
     DateTime? startDate,
     DateTime? dueDate,
+    String? desc,
     String? priority,
   }) async {
     if (title.trim().isEmpty) return;
@@ -147,6 +148,7 @@ class BoardController {
         title: title.trim(),
         status: groupId,
         startDate: startDate,
+        desc: desc,
         dueDate: dueDate,
         priority: priority,
       );

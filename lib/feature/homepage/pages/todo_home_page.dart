@@ -230,6 +230,20 @@ class _TodoWidgetsState extends ConsumerState<TodoWidgets> {
                 ],
               ),
 
+              //desc
+              if (task.desc != null) ...[
+                const SizedBox(height: 8),
+                Text(
+                  task.desc!,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w400,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+
               // Priority indicator
               if (task.priority != null) ...[
                 const SizedBox(height: 8),
@@ -353,7 +367,8 @@ class _TaskInputForm extends StatefulWidget {
 }
 
 class _TaskInputFormState extends State<_TaskInputForm> {
-  final _taskController = TextEditingController();
+  final _titleController = TextEditingController();
+  final _descriptionController = TextEditingController();
   DateTime? _startDate;
   DateTime? _dueDate;
   String? _priority;
@@ -361,7 +376,8 @@ class _TaskInputFormState extends State<_TaskInputForm> {
 
   @override
   void dispose() {
-    _taskController.dispose();
+    _titleController.dispose();
+    _descriptionController.dispose();
     super.dispose();
   }
 
@@ -386,7 +402,7 @@ class _TaskInputFormState extends State<_TaskInputForm> {
                 children: [
                   Expanded(
                     child: TextFormField(
-                      controller: _taskController,
+                      controller: _titleController,
                       autofocus: true,
                       decoration: const InputDecoration(
                         border: InputBorder.none,
@@ -400,6 +416,7 @@ class _TaskInputFormState extends State<_TaskInputForm> {
                       onFieldSubmitted: (_) => _saveTask(),
                     ),
                   ),
+
                   IconButton(
                     onPressed: () =>
                         widget.boardController.cancelAddTask(widget.groupId),
@@ -412,8 +429,22 @@ class _TaskInputFormState extends State<_TaskInputForm> {
                 ],
               ),
 
-              const SizedBox(height: 8),
-
+              AppSpacerWidget(),
+              TextFormField(
+                controller: _descriptionController,
+                autofocus: true,
+                decoration: const InputDecoration(
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                  hintText: 'Description....',
+                ),
+                style: const TextStyle(fontSize: 16),
+                onFieldSubmitted: (_) => _saveTask(),
+              ),
+              AppSpacerWidget(),
               // Options row
               Row(
                 children: [
@@ -444,7 +475,7 @@ class _TaskInputFormState extends State<_TaskInputForm> {
                     ),
                   ),
 
-                  const SizedBox(width: 8),
+                  AppSpacerWidget(),
 
                   // Priority picker
                   Expanded(
@@ -504,7 +535,7 @@ class _TaskInputFormState extends State<_TaskInputForm> {
                 ],
               ),
 
-              const SizedBox(height: 12),
+              AppSpacerWidget(),
 
               // Save button
               SizedBox(
@@ -550,7 +581,7 @@ class _TaskInputFormState extends State<_TaskInputForm> {
   }
 
   Future<void> _saveTask() async {
-    final title = _taskController.text.trim();
+    final title = _titleController.text.trim();
     if (title.isEmpty) return;
 
     setState(() => _isLoading = true);
@@ -560,6 +591,7 @@ class _TaskInputFormState extends State<_TaskInputForm> {
         groupId: widget.groupId,
         title: title,
         startDate: _startDate,
+        desc: _descriptionController.text.trim(),
         dueDate: _dueDate,
         priority: _priority,
       );

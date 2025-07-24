@@ -2,6 +2,7 @@
 class TaskModel {
   final String id;
   final String title;
+  final String? desc;
   final String status; // 'To Do', 'In Progress', 'Completed'
   final DateTime? startDate;
   final DateTime? dueDate;
@@ -12,6 +13,7 @@ class TaskModel {
   TaskModel({
     required this.id,
     required this.title,
+    this.desc,
     required this.status,
     this.startDate,
     this.dueDate,
@@ -26,6 +28,7 @@ class TaskModel {
       'id': id,
       'title': title,
       'status': status,
+      'desc': desc,
       'startDate': startDate?.toIso8601String(),
       'dueDate': dueDate?.toIso8601String(),
       'priority': priority,
@@ -39,8 +42,11 @@ class TaskModel {
     return TaskModel(
       id: map['id'] ?? '',
       title: map['title'] ?? '',
+      desc: map['desc'] ?? '',
       status: map['status'] ?? 'To Do',
-      startDate: map['startDate'] != null ? DateTime.parse(map['startDate']) : null,
+      startDate: map['startDate'] != null
+          ? DateTime.parse(map['startDate'])
+          : null,
       dueDate: map['dueDate'] != null ? DateTime.parse(map['dueDate']) : null,
       priority: map['priority'],
       createdAt: DateTime.parse(map['createdAt']),
@@ -53,6 +59,7 @@ class TaskModel {
     String? id,
     String? title,
     String? status,
+    String? desc,
     DateTime? startDate,
     DateTime? dueDate,
     String? priority,
@@ -63,6 +70,7 @@ class TaskModel {
       id: id ?? this.id,
       title: title ?? this.title,
       status: status ?? this.status,
+      desc: desc ?? this.desc,
       startDate: startDate ?? this.startDate,
       dueDate: dueDate ?? this.dueDate,
       priority: priority ?? this.priority,

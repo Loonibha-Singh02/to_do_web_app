@@ -56,6 +56,7 @@ class TaskActions {
     required String title,
     required String status,
     DateTime? startDate,
+    String? desc,
     DateTime? dueDate,
     String? priority,
   }) async {
@@ -63,6 +64,7 @@ class TaskActions {
       title: title,
       status: status,
       startDate: startDate,
+      desc: desc,
       dueDate: dueDate,
       priority: priority,
     );
@@ -78,6 +80,7 @@ class TaskActions {
     String? status,
     DateTime? startDate,
     DateTime? dueDate,
+    String? desc,
     String? priority,
   }) async {
     await _service.updateTask(
@@ -85,6 +88,7 @@ class TaskActions {
       title: title,
       status: status,
       startDate: startDate,
+      desc: desc,
       dueDate: dueDate,
       priority: priority,
     );
