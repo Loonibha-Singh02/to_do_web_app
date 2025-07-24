@@ -80,22 +80,26 @@ class BoardController {
   ) {
     final fromGroup = controller.getGroupController(fromGroupId);
     if (fromGroup != null) {
-      // Filter only TaskItems
-      final taskItems = fromGroup.items.whereType<TaskItem>().toList();
+      // Get the actual item being moved using the raw index
+      if (fromIndex < fromGroup.items.length) {
+        final movedItem = fromGroup.items[fromIndex];
 
-      if (fromIndex < taskItems.length) {
-        final item = taskItems[fromIndex];
+        // Only process if it's a TaskItem
+        if (movedItem is TaskItem) {
+          debugPrint(
+            'Moving task ${movedItem.task.id} from $fromGroupId to $toGroupId',
+          );
 
-        debugPrint(
-          'Moving task ${item.task.id} from $fromGroupId to $toGroupId',
-        );
-
-        final taskActions = ref.read(taskActionsProvider);
-        taskActions.updateTaskStatus(item.task.id, toGroupId).catchError((
-          error,
-        ) {
-          debugPrint('Error updating task status: $error');
-        });
+          final taskActions = ref.read(taskActionsProvider);
+          taskActions.updateTaskStatus(movedItem.task.id, toGroupId).catchError(
+            (error) {
+              debugPrint('Error updating task status: $error');
+            },
+          );
+        } else {
+          // If it's not a TaskItem (AddButton or InputItem), don't allow the move
+          debugPrint('Cannot move non-task item: ${movedItem.runtimeType}');
+        }
       }
     }
   }
@@ -177,7 +181,7 @@ class BoardController {
   }
 }
 
-// Custom item classes
+// Custom item classes with drag control
 class TaskItem extends AppFlowyGroupItem {
   final TaskModel task;
 
@@ -185,11 +189,17 @@ class TaskItem extends AppFlowyGroupItem {
 
   @override
   String get id => task.id;
+
+  // TaskItems are draggable
+  bool get canDrag => true;
 }
 
 class AddButtonItem extends AppFlowyGroupItem {
   @override
   String get id => '__add_button__';
+
+  // AddButton is not draggable
+  bool get canDrag => false;
 }
 
 class NewTaskInputItem extends AppFlowyGroupItem {
@@ -199,4 +209,7 @@ class NewTaskInputItem extends AppFlowyGroupItem {
 
   @override
   String get id => '__new_task_input_${groupId}__';
+
+  // InputForm is not draggable
+  bool get canDrag => false;
 }

@@ -177,7 +177,7 @@ class _TodoWidgetsState extends ConsumerState<TodoWidgets> {
       boardController: boardController,
     );
   }
-
+  
   Widget _buildTaskCard(TaskModel task) {
     return AppFlowyGroupCard(
       key: ValueKey('task_${task.id}'),
