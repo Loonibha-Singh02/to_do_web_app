@@ -69,4 +69,17 @@ class AppConstants {
         return const Icon(Icons.task_alt);
     }
   }
+
+  static  Color getPriorityColor(String priority) {
+    switch (priority.toLowerCase()) {
+      case 'high':
+        return AppColor.errorSwatch.shade700;
+      case 'medium':
+        return AppColor.pendingSwatch.shade700;
+      case 'low':
+        return AppColor.successSwatch.shade700;
+      default:
+        return Colors.grey;
+    }
+  }
 }
