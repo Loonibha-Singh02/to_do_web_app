@@ -1,4 +1,4 @@
-<h1>To-Do Web App ✅</h1>
+<img width="1440" height="900" alt="Screenshot 2025-07-25 at 1 27 45 PM" src="https://github.com/user-attachments/assets/b9e0cbf8-405d-437d-ad3b-fd42d5f81b42" /><h1>To-Do Web App ✅</h1>
 
 <h2>#Description</h2>
 The To-Do Web App is a Flutter-based productivity application designed to manage tasks efficiently with an intuitive Kanban-style board layout. It supports <strong>real-time updates using Firebase Realtime Database</strong>, ensuring your tasks are always synced. The app is responsive, theme-aware (Light/Dark Mode), and leverages modern Flutter state management for clean and scalable architecture.
@@ -9,7 +9,6 @@ The To-Do Web App is a Flutter-based productivity application designed to manage
   <li><strong>Dark and Light Mode:</strong> Toggle between dark and light themes seamlessly with persistent preferences.</li>
   <li><strong>Kanban Board Layout:</strong> Organised task categorisation (To Do, In Progress, Completed) with drag-and-drop functionality.</li>
   <li><strong>Task Prioritisation:</strong> Assign High, Medium, or Low priority with colour-coded indicators.</li>
-  <li><strong>Responsive Design:</strong> Adapts to different screen sizes for both web and desktop views.</li>
   <li><strong>Smooth Performance:</strong> Built with Flutter Riverpod for efficient state management.</li>
 </ul>
 
