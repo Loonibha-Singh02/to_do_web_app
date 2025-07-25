@@ -62,6 +62,8 @@ class _TaskInputWidgetState extends State<TaskInputWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return AppFlowyGroupCard(
       key: ValueKey(
         'task_input_${widget.groupId}_${widget.isEditMode ? widget.taskToEdit?.id : 'new'}',
@@ -69,7 +71,7 @@ class _TaskInputWidgetState extends State<TaskInputWidget> {
       decoration: const BoxDecoration(color: Colors.transparent),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: isDark ? AppColor.onDarkSwatch : Colors.white,
           borderRadius: BorderRadius.circular(8.0),
           border: Border.all(color: AppColor.primarySwatch.shade300, width: 2),
         ),
@@ -98,6 +100,10 @@ class _TaskInputWidgetState extends State<TaskInputWidget> {
                         enabledBorder: InputBorder.none,
                         focusedBorder: InputBorder.none,
                         onFieldSubmitted: (_) => _saveTask(),
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(
+                              color: isDark ? Colors.white : Colors.black,
+                            ),
                       ),
                     ),
                     IconButton(
@@ -115,6 +121,9 @@ class _TaskInputWidgetState extends State<TaskInputWidget> {
                   hintText: 'Description....',
                   autofocus: false,
                   onFieldSubmitted: (_) => _saveTask(),
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: isDark ? Colors.grey.shade300 : Colors.grey.shade700,
+                  ),
                 ),
                 AppSpacerWidget(),
                 // Options row
@@ -157,7 +166,10 @@ class _TaskInputWidgetState extends State<TaskInputWidget> {
                             size: 16,
                           ),
                           const SizedBox(width: 8),
-                          const Text('High'),
+                          Text(
+                            'High',
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
                         ],
                       ),
                     ),
@@ -171,7 +183,10 @@ class _TaskInputWidgetState extends State<TaskInputWidget> {
                             size: 16,
                           ),
                           const SizedBox(width: 8),
-                          const Text('Medium'),
+                          Text(
+                            'Medium',
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
                         ],
                       ),
                     ),
@@ -185,7 +200,10 @@ class _TaskInputWidgetState extends State<TaskInputWidget> {
                             size: 16,
                           ),
                           const SizedBox(width: 8),
-                          const Text('Low'),
+                          Text(
+                            'Low',
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
                         ],
                       ),
                     ),
@@ -250,34 +268,56 @@ class _TaskInputWidgetState extends State<TaskInputWidget> {
     InputBorder? focusedBorder,
     void Function(String)? onFieldSubmitted,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return TextFormField(
       controller: controller,
       readOnly: readOnly,
       autofocus: autofocus,
-      style: style ?? const TextStyle(fontSize: 16),
+      style:
+          style ??
+          Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: isDark ? Colors.white : Colors.black,
+          ),
       autovalidateMode: AutovalidateMode.onUserInteraction,
       decoration: InputDecoration(
         labelText: label,
         labelStyle: label != null
-            ? const TextStyle(fontWeight: FontWeight.bold)
+            ? Theme.of(context).textTheme.labelLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: isDark ? Colors.grey.shade300 : Colors.grey.shade700,
+              )
             : null,
         floatingLabelBehavior: FloatingLabelBehavior.always,
         hintText: hintText,
+        hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          color: isDark ? Colors.grey.shade400 : Colors.grey.shade500,
+        ),
         contentPadding: contentPadding,
-        border: border ?? const OutlineInputBorder(),
+        border:
+            border ??
+            OutlineInputBorder(
+              borderSide: BorderSide(
+                color: isDark ? Colors.grey.shade600 : Colors.grey,
+              ),
+            ),
         enabledBorder:
             enabledBorder ??
-            const OutlineInputBorder(
-              borderSide: BorderSide(color: Colors.grey),
+            OutlineInputBorder(
+              borderSide: BorderSide(
+                color: isDark ? Colors.grey.shade600 : Colors.grey,
+              ),
             ),
         focusedBorder:
             focusedBorder ??
-            const OutlineInputBorder(
-              borderSide: BorderSide(color: Colors.blue),
+            OutlineInputBorder(
+              borderSide: BorderSide(color: AppColor.primarySwatch.shade300),
             ),
         errorBorder: const OutlineInputBorder(
           borderSide: BorderSide(color: Colors.red),
         ),
+        fillColor: isDark ? AppColor.onDarkSwatch : Colors.white,
+        filled: true,
       ),
       validator: validator,
       onFieldSubmitted: onFieldSubmitted,
@@ -289,6 +329,8 @@ class _TaskInputWidgetState extends State<TaskInputWidget> {
     DateTime? currentDate,
     Function(DateTime?) onChanged,
   ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return SizedBox(
       width: 200,
       child: DateTimeFormField(
@@ -296,16 +338,36 @@ class _TaskInputWidgetState extends State<TaskInputWidget> {
         dateFormat: DateFormat("MMM dd, yyyy hh:mm a"),
         initialValue: currentDate,
         mode: DateTimeFieldPickerMode.dateAndTime,
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          color: isDark ? Colors.white : Colors.black,
+        ),
         decoration: InputDecoration(
           labelText: label,
+          labelStyle: Theme.of(context).textTheme.labelLarge?.copyWith(
+            color: isDark ? Colors.grey.shade300 : Colors.grey.shade700,
+          ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
-            borderSide: const BorderSide(color: Colors.grey),
+            borderSide: BorderSide(
+              color: isDark ? Colors.grey.shade600 : Colors.grey,
+            ),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: BorderSide(
+              color: isDark ? Colors.grey.shade600 : Colors.grey,
+            ),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: BorderSide(color: AppColor.primarySwatch.shade300),
           ),
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 12,
             vertical: 8,
           ),
+          fillColor: isDark ? AppColor.onDarkSwatch : Colors.white,
+          filled: true,
         ),
         onChanged: onChanged,
       ),
@@ -331,12 +393,19 @@ class _TaskInputWidgetState extends State<TaskInputWidget> {
           dueDate: _dueDate,
           priority: _priority,
         );
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Task updated successfully'),
-            backgroundColor: AppColor.successSwatch.shade700,
-          ),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Task updated successfully',
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: Colors.white),
+              ),
+              backgroundColor: AppColor.successSwatch.shade700,
+            ),
+          );
+        }
       } else {
         await widget.boardController.saveNewTask(
           groupId: widget.groupId,
@@ -346,12 +415,19 @@ class _TaskInputWidgetState extends State<TaskInputWidget> {
           dueDate: _dueDate,
           priority: _priority,
         );
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Task saved successfully'),
-            backgroundColor: AppColor.successSwatch.shade700,
-          ),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Task saved successfully',
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: Colors.white),
+              ),
+              backgroundColor: AppColor.successSwatch.shade700,
+            ),
+          );
+        }
       }
     } catch (error) {
       if (mounted) {
@@ -359,6 +435,9 @@ class _TaskInputWidgetState extends State<TaskInputWidget> {
           SnackBar(
             content: Text(
               'Error ${widget.isEditMode ? 'updating' : 'creating'} task: $error',
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: Colors.white),
             ),
             backgroundColor: AppColor.errorSwatch.shade700,
           ),

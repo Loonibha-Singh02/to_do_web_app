@@ -39,18 +39,23 @@ class _TodoWidgetsState extends ConsumerState<TodoWidgets> {
   }
 
   Widget _buildShimmerCard() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Shimmer.fromColors(
       key: UniqueKey(),
-      baseColor: Colors.grey.shade300,
-      highlightColor: Colors.grey.shade100,
+      baseColor: isDark ? Colors.grey.shade700 : Colors.grey.shade300,
+      highlightColor: isDark ? Colors.grey.shade600 : Colors.grey.shade100,
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 8),
         width: 280,
         height: 80,
         decoration: BoxDecoration(
-          color: Colors.grey.shade300,
+          color: isDark ? Colors.grey.shade700 : Colors.grey.shade300,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.grey.shade200, width: 1),
+          border: Border.all(
+            color: isDark ? Colors.grey.shade600 : Colors.grey.shade200,
+            width: 1,
+          ),
         ),
       ),
     );
@@ -59,6 +64,7 @@ class _TodoWidgetsState extends ConsumerState<TodoWidgets> {
   @override
   Widget build(BuildContext context) {
     final selectedPriorities = ref.watch(selectedPrioritiesProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     ref.listen(todoTasksProvider, (previous, next) {
       next.whenData((tasks) {
@@ -80,7 +86,17 @@ class _TodoWidgetsState extends ConsumerState<TodoWidgets> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('To Do Board'),
+        title: Text(
+          'To Do Board',
+          style: TextStyle(
+            color: isDark
+                ? AppColor.secondarySwatch.shade50
+                : AppColor.secondarySwatch.shade50,
+          ),
+        ),
+        backgroundColor: isDark
+            ? AppColor.onDarkSwatch.shade200
+            : AppColor.primarySwatch,
         actions: [
           Row(
             spacing: 10.spMin,
@@ -98,7 +114,9 @@ class _TodoWidgetsState extends ConsumerState<TodoWidgets> {
           controller: boardController.controller,
           groupConstraints: const BoxConstraints(minWidth: 300, maxWidth: 300),
           config: AppFlowyBoardConfig(
-            groupBackgroundColor: AppColor.secondarySwatch.shade50,
+            groupBackgroundColor: isDark
+                ? AppColor.onDarkSwatch.shade100
+                : AppColor.secondarySwatch.shade50,
           ),
           headerBuilder: (context, group) => _buildHeader(group),
           footerBuilder: (context, group) => _buildFooter(context, group),
@@ -157,13 +175,17 @@ class _TodoWidgetsState extends ConsumerState<TodoWidgets> {
       ),
       child: Row(
         children: [
-          AppConstants.getBoardIcon(group.id),
+          AppConstants.getBoardIcon(group.id, context),
           AppSpacerWidget(width: 10.spMin),
-          Text(
-            group.id,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          Expanded(
+            child: Text(
+              group.id,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: AppColor.onDarkSwatch.shade50,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
-          const Spacer(),
           // Count
           Consumer(
             builder: (context, ref, child) {
@@ -179,10 +201,9 @@ class _TodoWidgetsState extends ConsumerState<TodoWidgets> {
                   radius: 12.spMin,
                   child: Text(
                     '${tasks.length}',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
                       color: Colors.black,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
@@ -250,6 +271,8 @@ class _TodoWidgetsState extends ConsumerState<TodoWidgets> {
   }
 
   Widget _buildNoDataCard(String groupId) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return AppFlowyGroupCard(
       key: ValueKey('no_data_$groupId'),
       decoration: const BoxDecoration(color: Colors.transparent),
@@ -257,20 +280,27 @@ class _TodoWidgetsState extends ConsumerState<TodoWidgets> {
         width: 280,
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Colors.grey.shade50,
+          color: isDark ? AppColor.onDarkSwatch : Colors.grey.shade50,
           borderRadius: BorderRadius.circular(8.0),
-          border: Border.all(color: Colors.grey.shade200, width: 1),
+          border: Border.all(
+            color: isDark ? Colors.grey.shade600 : Colors.grey.shade200,
+            width: 1,
+          ),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.filter_list_off, size: 40, color: Colors.grey.shade400),
+            Icon(
+              Icons.filter_list_off,
+              size: 40,
+              color: isDark ? Colors.grey.shade300 : Colors.grey.shade400,
+            ),
             const SizedBox(height: 12),
             Text(
               'No tasks match the current filter',
               style: TextStyle(
                 fontSize: 14,
-                color: Colors.grey.shade600,
+                color: isDark ? Colors.grey.shade300 : Colors.grey.shade600,
                 fontWeight: FontWeight.w500,
               ),
               textAlign: TextAlign.center,
@@ -278,7 +308,10 @@ class _TodoWidgetsState extends ConsumerState<TodoWidgets> {
             const SizedBox(height: 8),
             Text(
               'Try adjusting your filter settings',
-              style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+              style: TextStyle(
+                fontSize: 12,
+                color: isDark ? Colors.grey.shade400 : Colors.grey.shade500,
+              ),
               textAlign: TextAlign.center,
             ),
           ],
@@ -288,21 +321,25 @@ class _TodoWidgetsState extends ConsumerState<TodoWidgets> {
   }
 
   Widget _buildTaskCard(TaskModel task) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final isOverdue =
         task.dueDate != null &&
         task.dueDate!.isBefore(DateTime.now()) &&
         task.status != 'Completed';
+
     return AppFlowyGroupCard(
       key: ValueKey('task_${task.id}'),
       decoration: const BoxDecoration(color: Colors.transparent),
       child: Container(
         width: 280,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: isDark ? Colors.transparent : Colors.white,
           borderRadius: BorderRadius.circular(8.0),
           border: Border.all(
             color: isOverdue
                 ? AppColor.errorSwatch.shade700
+                : isDark
+                ? Colors.grey.shade700
                 : Colors.transparent,
             width: 2,
           ),
@@ -318,9 +355,9 @@ class _TodoWidgetsState extends ConsumerState<TodoWidgets> {
                   Expanded(
                     child: Text(
                       task.title,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: isDark ? Colors.white : Colors.black,
+                        fontWeight: FontWeight.w800,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -338,7 +375,7 @@ class _TodoWidgetsState extends ConsumerState<TodoWidgets> {
                         icon: Icon(
                           Icons.edit_outlined,
                           size: 18,
-                          color: AppColor.primarySwatch.shade700,
+                          color: AppColor.secondarySwatch.shade100,
                         ),
                       ),
                       IconButton(
@@ -354,19 +391,17 @@ class _TodoWidgetsState extends ConsumerState<TodoWidgets> {
                 ],
               ),
               if (task.desc != null) ...[
-                const AppSpacerWidget(),
                 Text(
                   task.desc!,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w400,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: isDark ? Colors.grey.shade300 : Colors.grey.shade700,
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
               ],
+              AppSpacerWidget(),
               if (task.priority != null) ...[
-                const AppSpacerWidget(),
                 Row(
                   children: [
                     Icon(
@@ -377,8 +412,7 @@ class _TodoWidgetsState extends ConsumerState<TodoWidgets> {
                     const AppSpacerWidget(width: 4),
                     Text(
                       task.priority!,
-                      style: TextStyle(
-                        fontSize: 12,
+                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
                         color: AppConstants.getPriorityColor(task.priority!),
                         fontWeight: FontWeight.w500,
                       ),
@@ -387,7 +421,6 @@ class _TodoWidgetsState extends ConsumerState<TodoWidgets> {
                 ),
               ],
               if (task.startDate != null || task.dueDate != null) ...[
-                const AppSpacerWidget(),
                 Row(
                   children: [
                     if (task.startDate != null)
@@ -405,6 +438,7 @@ class _TodoWidgetsState extends ConsumerState<TodoWidgets> {
   }
 
   Widget _buildDateRow(String label, DateTime date) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final isOverdue = date.isBefore(DateTime.now()) && label == 'Due:';
 
     return Padding(
@@ -413,18 +447,18 @@ class _TodoWidgetsState extends ConsumerState<TodoWidgets> {
         children: [
           Text(
             label,
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey.shade600,
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+              color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
               fontWeight: FontWeight.w500,
             ),
           ),
           Text(
             DateFormat('MMM dd, yyyy').format(date),
-            style: TextStyle(
-              fontSize: 12,
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
               color: isOverdue
                   ? AppColor.errorSwatch.shade900
+                  : isDark
+                  ? Colors.grey.shade300
                   : Colors.grey.shade800,
               fontWeight: FontWeight.w400,
             ),
@@ -435,15 +469,33 @@ class _TodoWidgetsState extends ConsumerState<TodoWidgets> {
   }
 
   void _showDeleteConfirmation(TaskModel task) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Task'),
-        content: Text('Are you sure you want to delete "${task.title}"?'),
+        backgroundColor: isDark ? AppColor.onDarkSwatch : Colors.white,
+        title: Text(
+          'Delete Task',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+            color: isDark ? Colors.white : Colors.black,
+          ),
+        ),
+        content: Text(
+          'Are you sure you want to delete "${task.title}"?',
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: isDark ? Colors.grey.shade300 : Colors.grey.shade700,
+          ),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: Text(
+              'Cancel',
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                color: isDark ? Colors.grey.shade300 : Colors.grey.shade600,
+              ),
+            ),
           ),
           TextButton(
             onPressed: () {

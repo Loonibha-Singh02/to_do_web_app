@@ -22,9 +22,9 @@ class SettingsPage extends ConsumerWidget {
                 Switch(
                   value: isDarkMode,
                   onChanged: (value) {
-                    ref.read(themeModeProvider.notifier).state = value
-                        ? ThemeMode.dark
-                        : ThemeMode.light;
+                    ref
+                        .read(themeModeProvider.notifier)
+                        .setThemeMode(value ? ThemeMode.dark : ThemeMode.light);
                   },
                 ),
               ],

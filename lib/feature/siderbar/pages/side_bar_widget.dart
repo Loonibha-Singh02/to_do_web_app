@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:to_do_web_app/core/constants/app_color.dart';
 import 'package:to_do_web_app/core/constants/app_constants.dart';
+import 'package:to_do_web_app/core/provider/theme_provider.dart';
 import 'package:to_do_web_app/feature/siderbar/models/sidebar_item_model.dart';
 
-class SideBarWidget extends StatefulWidget {
+class SideBarWidget extends ConsumerStatefulWidget {
   final List<SidebarItemModel> items;
-  final ValueChanged<String>? onItemSelected; // optional navigation callback
+  final ValueChanged<String>? onItemSelected;
   final String selectedRoute;
 
   const SideBarWidget({
@@ -16,17 +18,20 @@ class SideBarWidget extends StatefulWidget {
   });
 
   @override
-  State<SideBarWidget> createState() => _SidebarWidgetsState();
+  ConsumerState<SideBarWidget> createState() => _SidebarWidgetsState();
 }
 
-class _SidebarWidgetsState extends State<SideBarWidget> {
+class _SidebarWidgetsState extends ConsumerState<SideBarWidget> {
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = ref.watch(isDarkModeProvider);
     return Material(
       child: Container(
         width: 250,
         decoration: BoxDecoration(
-          color: AppColor.primarySwatch,
+          color: isDarkMode
+              ? AppColor.onDarkSwatch.shade200
+              : AppColor.primarySwatch,
           borderRadius: AppConstants.borderRadius,
         ),
         child: Column(
@@ -56,7 +61,7 @@ class _SidebarWidgetsState extends State<SideBarWidget> {
 
                   return Container(
                     decoration: BoxDecoration(
-                      color: isSelected
+                      color: isSelected && isDarkMode
                           ? AppColor.primarySwatch.shade200
                           : Colors.transparent,
                       borderRadius: BorderRadius.circular(8),
