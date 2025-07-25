@@ -29,7 +29,7 @@ class _MainLayoutState extends State<MainLayout> {
   Widget getSelectedPage() {
     switch (sidebarItems[selectedIndex].route) {
       case '/home':
-        return const TodoWidgets();
+        return const TodoHomePage();
       case '/settings':
         return const SettingsPage();
       default:

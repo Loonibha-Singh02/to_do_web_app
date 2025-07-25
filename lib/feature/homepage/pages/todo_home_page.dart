@@ -15,14 +15,14 @@ import 'package:to_do_web_app/feature/homepage/widgets/priority_filter_widget.da
 import 'package:to_do_web_app/feature/homepage/widgets/status_filter_widget.dart';
 import 'package:to_do_web_app/feature/homepage/widgets/task_input_widget.dart';
 
-class TodoWidgets extends ConsumerStatefulWidget {
-  const TodoWidgets({super.key});
+class TodoHomePage extends ConsumerStatefulWidget {
+  const TodoHomePage({super.key});
 
   @override
-  ConsumerState<TodoWidgets> createState() => _TodoWidgetsState();
+  ConsumerState<TodoHomePage> createState() => _TodoHomePageState();
 }
 
-class _TodoWidgetsState extends ConsumerState<TodoWidgets> {
+class _TodoHomePageState extends ConsumerState<TodoHomePage> {
   late final BoardController boardController;
 
   @override
