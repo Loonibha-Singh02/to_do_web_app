@@ -46,7 +46,7 @@ shimmer: ^3.0.0
 <img width="1440" height="900" alt="To Do Home Page" src="https://github.com/user-attachments/assets/388bc129-6045-4982-a66b-21c5bc044cf6" />
 <img width="1440" height="900" alt="Add Task" src="https://github.com/user-attachments/assets/7ba92689-9a83-4868-81b0-f3c0243c7f0a" />
 <img width="1440" height="900" alt="Completed Task" src="https://github.com/user-attachments/assets/1bff922d-8d48-40ab-8c70-6375fd5f26a2" />
-<img src="https://github.com/user-attachments/assets/a098dc33-d81a-4945-9112-f3f4727c1be2" alt="Theme" width="300">
+<img width="1440" height="900" src="https://github.com/user-attachments/assets/a098dc33-d81a-4945-9112-f3f4727c1be2" alt="Theme">
 
 
 <h2>Setup Instructions ⚙️</h2>
