@@ -93,3 +93,8 @@ flutter run -d macos
   <li><strong>providers/</strong> – Riverpod providers for theme, tasks, and settings.</li>
 </ul>
 
+<h2>Branches</h2>
+<ul>
+  <li><strong>core/</strong>There is two branches: main and feat/todo_app.</li>
+</ul>
+
