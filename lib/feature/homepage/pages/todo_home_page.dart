@@ -38,34 +38,12 @@ class _TodoHomePageState extends ConsumerState<TodoHomePage> {
     super.dispose();
   }
 
-  Widget _buildShimmerCard() {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return Shimmer.fromColors(
-      key: UniqueKey(),
-      baseColor: isDark ? Colors.grey.shade700 : Colors.grey.shade300,
-      highlightColor: isDark ? Colors.grey.shade600 : Colors.grey.shade100,
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 8),
-        width: 280,
-        height: 80,
-        decoration: BoxDecoration(
-          color: isDark ? Colors.grey.shade700 : Colors.grey.shade300,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: isDark ? Colors.grey.shade600 : Colors.grey.shade200,
-            width: 1,
-          ),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    final selectedPriorities = ref.watch(selectedPrioritiesProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
+    // Riverpod listeners that update the board when task data changes
+    // These ensure the UI stays in sync with the backend data
     ref.listen(todoTasksProvider, (previous, next) {
       next.whenData((tasks) {
         boardController.updateGroupWithTasks('To Do', tasks);
@@ -135,11 +113,6 @@ class _TodoHomePageState extends ConsumerState<TodoHomePage> {
                 ),
               ),
               data: (tasks) {
-                // Show "No Data" card if no tasks and filters are active
-                if (tasks.isEmpty && selectedPriorities.isNotEmpty) {
-                  return _buildNoDataCard(group.id);
-                }
-
                 if (groupItem is TaskItem) {
                   // Check if this task is being edited
                   if (boardController.isTaskBeingEdited(groupItem.task.id)) {
@@ -166,6 +139,7 @@ class _TodoHomePageState extends ConsumerState<TodoHomePage> {
     );
   }
 
+  /// Build header for each group
   Widget _buildHeader(AppFlowyGroupData group) {
     return Container(
       padding: EdgeInsets.all(10.spMin),
@@ -224,6 +198,7 @@ class _TodoHomePageState extends ConsumerState<TodoHomePage> {
     );
   }
 
+  /// footer ui to show the add task button and input form
   Widget _buildFooter(BuildContext context, AppFlowyGroupData group) {
     return Column(
       key: ValueKey('footer_${group.id}'),
@@ -244,6 +219,7 @@ class _TodoHomePageState extends ConsumerState<TodoHomePage> {
     );
   }
 
+  /// add task ui
   Widget _buildAddTaskButtonCard(
     BuildContext context,
     AppFlowyGroupData group,
@@ -270,56 +246,7 @@ class _TodoHomePageState extends ConsumerState<TodoHomePage> {
     );
   }
 
-  Widget _buildNoDataCard(String groupId) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return AppFlowyGroupCard(
-      key: ValueKey('no_data_$groupId'),
-      decoration: const BoxDecoration(color: Colors.transparent),
-      child: Container(
-        width: 280,
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: isDark ? AppColor.onDarkSwatch : Colors.grey.shade50,
-          borderRadius: BorderRadius.circular(8.0),
-          border: Border.all(
-            color: isDark ? Colors.grey.shade600 : Colors.grey.shade200,
-            width: 1,
-          ),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.filter_list_off,
-              size: 40,
-              color: isDark ? Colors.grey.shade300 : Colors.grey.shade400,
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'No tasks match the current filter',
-              style: TextStyle(
-                fontSize: 14,
-                color: isDark ? Colors.grey.shade300 : Colors.grey.shade600,
-                fontWeight: FontWeight.w500,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Try adjusting your filter settings',
-              style: TextStyle(
-                fontSize: 12,
-                color: isDark ? Colors.grey.shade400 : Colors.grey.shade500,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
+  ///task card ui
   Widget _buildTaskCard(TaskModel task) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isOverdue =
@@ -379,7 +306,10 @@ class _TodoHomePageState extends ConsumerState<TodoHomePage> {
                         ),
                       ),
                       IconButton(
-                        onPressed: () => _showDeleteConfirmation(task),
+                        onPressed: () => boardController.showDeleteConfirmation(
+                          context,
+                          task,
+                        ),
                         icon: Icon(
                           Icons.delete_outline,
                           size: 18,
@@ -468,46 +398,26 @@ class _TodoHomePageState extends ConsumerState<TodoHomePage> {
     );
   }
 
-  void _showDeleteConfirmation(TaskModel task) {
+  /// when there is no data in the list show no data card
+  Widget _buildShimmerCard() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: isDark ? AppColor.onDarkSwatch : Colors.white,
-        title: Text(
-          'Delete Task',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            color: isDark ? Colors.white : Colors.black,
+    return Shimmer.fromColors(
+      key: UniqueKey(),
+      baseColor: isDark ? Colors.grey.shade700 : Colors.grey.shade300,
+      highlightColor: isDark ? Colors.grey.shade600 : Colors.grey.shade100,
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 8),
+        width: 280,
+        height: 80,
+        decoration: BoxDecoration(
+          color: isDark ? Colors.grey.shade700 : Colors.grey.shade300,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isDark ? Colors.grey.shade600 : Colors.grey.shade200,
+            width: 1,
           ),
         ),
-        content: Text(
-          'Are you sure you want to delete "${task.title}"?',
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: isDark ? Colors.grey.shade300 : Colors.grey.shade700,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(
-              'Cancel',
-              style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                color: isDark ? Colors.grey.shade300 : Colors.grey.shade600,
-              ),
-            ),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              boardController.deleteTask(task.id);
-            },
-            style: TextButton.styleFrom(
-              foregroundColor: AppColor.errorSwatch.shade700,
-            ),
-            child: const Text('Delete'),
-          ),
-        ],
       ),
     );
   }

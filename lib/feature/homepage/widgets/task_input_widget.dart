@@ -232,25 +232,6 @@ class _TaskInputWidgetState extends State<TaskInputWidget> {
     );
   }
 
-  String _getDateText() {
-    if (_startDate != null && _dueDate != null) {
-      return '${DateFormat('yyyy MMM dd ').format(_startDate!)} - ${DateFormat('yyyy MMM dd').format(_dueDate!)}';
-    } else if (_startDate != null) {
-      return 'Start: ${DateFormat('MMM dd').format(_startDate!)}';
-    } else if (_dueDate != null) {
-      return 'Due: ${DateFormat('MMM dd').format(_dueDate!)}';
-    }
-    return 'Dates';
-  }
-
-  void _cancelAction() {
-    if (widget.isEditMode) {
-      widget.boardController.cancelEditTask(widget.taskToEdit!.id);
-    } else {
-      widget.boardController.cancelAddTask(widget.groupId);
-    }
-  }
-
   Widget buildTextField({
     required TextEditingController controller,
     String? label,
@@ -372,6 +353,25 @@ class _TaskInputWidgetState extends State<TaskInputWidget> {
         onChanged: onChanged,
       ),
     );
+  }
+
+  String _getDateText() {
+    if (_startDate != null && _dueDate != null) {
+      return '${DateFormat('yyyy MMM dd ').format(_startDate!)} - ${DateFormat('yyyy MMM dd').format(_dueDate!)}';
+    } else if (_startDate != null) {
+      return 'Start: ${DateFormat('MMM dd').format(_startDate!)}';
+    } else if (_dueDate != null) {
+      return 'Due: ${DateFormat('MMM dd').format(_dueDate!)}';
+    }
+    return 'Dates';
+  }
+
+  void _cancelAction() {
+    if (widget.isEditMode) {
+      widget.boardController.cancelEditTask(widget.taskToEdit!.id);
+    } else {
+      widget.boardController.cancelAddTask(widget.groupId);
+    }
   }
 
   Future<void> _saveTask() async {

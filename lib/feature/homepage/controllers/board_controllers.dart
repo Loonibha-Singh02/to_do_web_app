@@ -1,6 +1,7 @@
 import 'package:appflowy_board/appflowy_board.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:to_do_web_app/core/constants/app_color.dart';
 import 'package:to_do_web_app/feature/firebase/models/task_model.dart';
 import 'package:to_do_web_app/feature/homepage/providers/task_provider.dart';
 
@@ -199,6 +200,55 @@ class BoardController {
     } catch (error) {
       debugPrint('Error updating task: $error');
       rethrow;
+    }
+  }
+
+  // show delete confirmation dialog
+  Future<void> showDeleteConfirmation(
+    BuildContext context,
+    TaskModel task,
+  ) async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: isDark ? AppColor.onDarkSwatch : Colors.white,
+        title: Text(
+          'Delete Task',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+            color: isDark ? Colors.white : Colors.black,
+          ),
+        ),
+        content: Text(
+          'Are you sure you want to delete "${task.title}"?',
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: isDark ? Colors.grey.shade300 : Colors.grey.shade700,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(
+              'Cancel',
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                color: isDark ? Colors.grey.shade300 : Colors.grey.shade600,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: TextButton.styleFrom(
+              foregroundColor: AppColor.errorSwatch.shade700,
+            ),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (result == true) {
+      await deleteTask(task.id);
     }
   }
 
