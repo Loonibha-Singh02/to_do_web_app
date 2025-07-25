@@ -95,6 +95,6 @@ flutter run -d macos
 
 <h2>Branches</h2>
 <ul>
-  <li><strong>core/</strong>There is two branches: main and feat/todo_app.</li>
+  <li>There is two branches: main and feat/todo_app.</li>
 </ul>
 
