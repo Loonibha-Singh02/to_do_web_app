@@ -43,9 +43,14 @@ shimmer: ^3.0.0
 
 <h2>Screenshots 📸</h2>
 <p>Add your screenshots here after uploading to GitHub:</p>
-<img src="LINK_TO_YOUR_BOARD_SCREENSHOT" alt="Board View" width="300">
+<img src="https://github.com/user-attachments/assets/a098dc33-d81a-4945-9112-f3f4727c1be2" alt="Board View" width="300">
 <img src="LINK_TO_YOUR_TASK_DETAILS_SCREENSHOT" alt="Task Details" width="300">
 <img src="LINK_TO_YOUR_SETTINGS_SCREENSHOT" alt="Settings Page" width="300">
+<img width="1440" height="900" alt="Screenshot 2025-07-25 at 1 28 38 PM" src="https://github.com/user-attachments/assets/388bc129-6045-4982-a66b-21c5bc044cf6" />
+<img width="1440" height="900" alt="Screenshot 2025-07-25 at 1 28 24 PM" src="https://github.com/user-attachments/assets/7ba92689-9a83-4868-81b0-f3c0243c7f0a" />
+<img width="1440" height="900" alt="Screenshot 2025-07-25 at 1 28 14 PM" src="https://github.com/user-attachments/assets/11703d5f-a116-4da0-9179-0227095b74c1" />
+<img width="1440" height="900" alt="Screenshot 2025-07-25 at 1 28 08 PM" src="https://github.com/user-attachments/assets/1bff922d-8d48-40ab-8c70-6375fd5f26a2" />
+
 
 <h2>Setup Instructions ⚙️</h2>
 <ul>
