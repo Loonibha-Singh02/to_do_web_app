@@ -83,10 +83,11 @@ class _TodoWidgetsState extends ConsumerState<TodoWidgets> {
         title: const Text('To Do Board'),
         actions: [
           Row(
+            spacing: 10.spMin,
             children: [
               PriorityFilterWidget(),
-              const AppSpacerWidget(width: 12),
               StatusFilterWidget(),
+              const AppSpacerWidget(width: 12),
             ],
           ),
         ],

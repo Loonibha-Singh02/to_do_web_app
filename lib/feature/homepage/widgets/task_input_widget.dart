@@ -28,6 +28,7 @@ class TaskInputWidget extends StatefulWidget {
 }
 
 class _TaskInputWidgetState extends State<TaskInputWidget> {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
   DateTime? _startDate;
@@ -74,128 +75,139 @@ class _TaskInputWidgetState extends State<TaskInputWidget> {
         ),
         child: Padding(
           padding: const EdgeInsets.all(12.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Title input with cancel button
-              Row(
-                children: [
-                  Expanded(
-                    child: buildTextField(
-                      controller: _titleController,
-                      hintText: 'Task name....',
-                      autofocus: true,
-                      border: InputBorder.none,
-                      enabledBorder: InputBorder.none,
-                      focusedBorder: InputBorder.none,
-                      onFieldSubmitted: (_) => _saveTask(),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Title input with cancel button
+                Row(
+                  children: [
+                    Expanded(
+                      child: buildTextField(
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Task title cannot be empty';
+                          }
+                          return null;
+                        },
+                        controller: _titleController,
+                        hintText: 'Task name....',
+                        autofocus: true,
+                        border: InputBorder.none,
+                        enabledBorder: InputBorder.none,
+                        focusedBorder: InputBorder.none,
+                        onFieldSubmitted: (_) => _saveTask(),
+                      ),
                     ),
-                  ),
-                  IconButton(
-                    onPressed: _cancelAction,
-                    icon: Icon(
-                      Icons.close,
-                      size: 15,
-                      color: AppColor.errorSwatch.shade700,
+                    IconButton(
+                      onPressed: _cancelAction,
+                      icon: Icon(
+                        Icons.close,
+                        size: 15,
+                        color: AppColor.errorSwatch.shade700,
+                      ),
                     ),
-                  ),
-                ],
-              ),
-              buildTextField(
-                controller: _descriptionController,
-                hintText: 'Description....',
-                autofocus: false,
-                onFieldSubmitted: (_) => _saveTask(),
-              ),
-              AppSpacerWidget(),
-              // Options row
-              PopUpMenuWidget(
-                tooltip: 'Add Dates',
-                items: [
-                  PopupMenuItem(
-                    child: _buildDatePickerField('Start Date', _startDate, (
-                      date,
-                    ) {
-                      setState(() => _startDate = date);
-                    }),
-                  ),
-                  PopupMenuDivider(),
-                  PopupMenuItem(
-                    child: _buildDatePickerField('Due Date', _dueDate, (date) {
-                      setState(() => _dueDate = date);
-                    }),
-                  ),
-                ],
-                icon: Icons.calendar_today,
-                text: _getDateText(),
-              ),
-              AppSpacerWidget(),
-              PopUpMenuWidget(
-                tooltip: 'Set Priority',
-                onSelected: (value) {
-                  setState(() => _priority = value.toString());
-                },
-                items: [
-                  PopupMenuItem(
-                    value: 'High',
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.flag,
-                          color: AppColor.errorSwatch.shade700,
-                          size: 16,
-                        ),
-                        const SizedBox(width: 8),
-                        const Text('High'),
-                      ],
-                    ),
-                  ),
-                  PopupMenuItem(
-                    value: 'Medium',
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.flag,
-                          color: AppColor.pendingSwatch.shade700,
-                          size: 16,
-                        ),
-                        const SizedBox(width: 8),
-                        const Text('Medium'),
-                      ],
-                    ),
-                  ),
-                  PopupMenuItem(
-                    value: 'Low',
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.flag,
-                          color: AppColor.successSwatch.shade700,
-                          size: 16,
-                        ),
-                        const SizedBox(width: 8),
-                        const Text('Low'),
-                      ],
-                    ),
-                  ),
-                ],
-                icon: Icons.flag,
-                text: _priority ?? 'Priority',
-              ),
-
-              AppSpacerWidget(),
-
-              // Save button
-              SizedBox(
-                width: double.infinity,
-                child: ButtonWidget(
-                  onPressed: _isLoading ? null : _saveTask,
-                  label: _isLoading
-                      ? (widget.isEditMode ? 'Updating...' : 'Saving...')
-                      : (widget.isEditMode ? 'Update Task' : 'Save Task'),
+                  ],
                 ),
-              ),
-            ],
+                buildTextField(
+                  controller: _descriptionController,
+                  hintText: 'Description....',
+                  autofocus: false,
+                  onFieldSubmitted: (_) => _saveTask(),
+                ),
+                AppSpacerWidget(),
+                // Options row
+                PopUpMenuWidget(
+                  tooltip: 'Add Dates',
+                  items: [
+                    PopupMenuItem(
+                      child: _buildDatePickerField('Start Date', _startDate, (
+                        date,
+                      ) {
+                        setState(() => _startDate = date);
+                      }),
+                    ),
+                    PopupMenuDivider(),
+                    PopupMenuItem(
+                      child: _buildDatePickerField('Due Date', _dueDate, (
+                        date,
+                      ) {
+                        setState(() => _dueDate = date);
+                      }),
+                    ),
+                  ],
+                  icon: Icons.calendar_today,
+                  text: _getDateText(),
+                ),
+                AppSpacerWidget(),
+                PopUpMenuWidget(
+                  tooltip: 'Set Priority',
+                  onSelected: (value) {
+                    setState(() => _priority = value.toString());
+                  },
+                  items: [
+                    PopupMenuItem(
+                      value: 'High',
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.flag,
+                            color: AppColor.errorSwatch.shade700,
+                            size: 16,
+                          ),
+                          const SizedBox(width: 8),
+                          const Text('High'),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: 'Medium',
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.flag,
+                            color: AppColor.pendingSwatch.shade700,
+                            size: 16,
+                          ),
+                          const SizedBox(width: 8),
+                          const Text('Medium'),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: 'Low',
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.flag,
+                            color: AppColor.successSwatch.shade700,
+                            size: 16,
+                          ),
+                          const SizedBox(width: 8),
+                          const Text('Low'),
+                        ],
+                      ),
+                    ),
+                  ],
+                  icon: Icons.flag,
+                  text: _priority ?? 'Priority',
+                ),
+
+                AppSpacerWidget(),
+
+                // Save button
+                SizedBox(
+                  width: double.infinity,
+                  child: ButtonWidget(
+                    onPressed: _isLoading ? null : _saveTask,
+                    label: _isLoading
+                        ? (widget.isEditMode ? 'Updating...' : 'Saving...')
+                        : (widget.isEditMode ? 'Update Task' : 'Save Task'),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -301,6 +313,9 @@ class _TaskInputWidgetState extends State<TaskInputWidget> {
   }
 
   Future<void> _saveTask() async {
+    if (!_formKey.currentState!.validate()) {
+      return; // Stops saving if validation fails
+    }
     final title = _titleController.text.trim();
     if (title.isEmpty) return;
 
@@ -316,6 +331,12 @@ class _TaskInputWidgetState extends State<TaskInputWidget> {
           dueDate: _dueDate,
           priority: _priority,
         );
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Task updated successfully'),
+            backgroundColor: AppColor.successSwatch.shade700,
+          ),
+        );
       } else {
         await widget.boardController.saveNewTask(
           groupId: widget.groupId,
@@ -324,6 +345,12 @@ class _TaskInputWidgetState extends State<TaskInputWidget> {
           desc: _descriptionController.text.trim(),
           dueDate: _dueDate,
           priority: _priority,
+        );
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Task saved successfully'),
+            backgroundColor: AppColor.successSwatch.shade700,
+          ),
         );
       }
     } catch (error) {

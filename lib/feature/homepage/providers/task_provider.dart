@@ -23,47 +23,33 @@ final tasksByStatusProvider = StreamProvider.family<List<TaskModel>, String>((
   return service.getTasksByStatus(status);
 });
 
-// Provider for todo tasks with filtering
+// Provider for todo tasks
 final todoTasksProvider = StreamProvider<List<TaskModel>>((ref) {
   final service = ref.watch(firebaseTodoServiceProvider);
   final selectedPriorities = ref.watch(selectedPrioritiesProvider);
-  final selectedStatuses = ref.watch(selectedStatusesProvider);
 
   return service.getTasksByStatus('To Do').map((tasks) {
-    return filterTasks(tasks, selectedPriorities, selectedStatuses);
+    return filterTasks(tasks, selectedPriorities, {});
   });
 });
 
-// Provider for in progress tasks with filtering
+// Provider for in progress tasks
 final inProgressTasksProvider = StreamProvider<List<TaskModel>>((ref) {
   final service = ref.watch(firebaseTodoServiceProvider);
   final selectedPriorities = ref.watch(selectedPrioritiesProvider);
-  final selectedStatuses = ref.watch(selectedStatusesProvider);
 
   return service.getTasksByStatus('In Progress').map((tasks) {
-    return filterTasks(tasks, selectedPriorities, selectedStatuses);
+    return filterTasks(tasks, selectedPriorities, {});
   });
 });
 
-// Provider for completed tasks with filtering
+// Provider for completed tasks
 final completedTasksProvider = StreamProvider<List<TaskModel>>((ref) {
   final service = ref.watch(firebaseTodoServiceProvider);
   final selectedPriorities = ref.watch(selectedPrioritiesProvider);
-  final selectedStatuses = ref.watch(selectedStatusesProvider);
 
   return service.getTasksByStatus('Completed').map((tasks) {
-    return filterTasks(tasks, selectedPriorities, selectedStatuses);
-  });
-});
-
-// NEW: Provider for filtered tasks across all statuses
-final filteredTasksProvider = StreamProvider<List<TaskModel>>((ref) {
-  final service = ref.watch(firebaseTodoServiceProvider);
-  final selectedPriorities = ref.watch(selectedPrioritiesProvider);
-  final selectedStatuses = ref.watch(selectedStatusesProvider);
-
-  return service.getTasks().map((tasks) {
-    return filterTasks(tasks, selectedPriorities, selectedStatuses);
+    return filterTasks(tasks, selectedPriorities, {});
   });
 });
 
@@ -129,7 +115,7 @@ class TaskActions {
 final selectedPrioritiesProvider = StateProvider<Set<String>>((ref) => {});
 final selectedStatusesProvider = StateProvider<Set<String>>((ref) => {});
 
-// UPDATED: Helper function to filter tasks
+// Helper function to filter tasks
 List<TaskModel> filterTasks(
   List<TaskModel> tasks,
   Set<String> priorities,
@@ -144,7 +130,7 @@ List<TaskModel> filterTasks(
     }).toList();
   }
 
-  // Filter by status if any selected
+  // Filter by status if any selected (for overall filtering)
   if (statuses.isNotEmpty) {
     filteredTasks = filteredTasks.where((task) {
       return statuses.contains(task.status);
@@ -181,7 +167,7 @@ class SimpleFilterActions {
     ref.read(selectedStatusesProvider.notifier).state = {};
   }
 
-  // Status filter actions
+  // Status filter actions (same as priority)
   void toggleStatus(String status) {
     final current = ref.read(selectedStatusesProvider);
     final updated = Set<String>.from(current);
