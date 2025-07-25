@@ -27,9 +27,10 @@ final tasksByStatusProvider = StreamProvider.family<List<TaskModel>, String>((
 final todoTasksProvider = StreamProvider<List<TaskModel>>((ref) {
   final service = ref.watch(firebaseTodoServiceProvider);
   final selectedPriorities = ref.watch(selectedPrioritiesProvider);
+  final selectedStatuses = ref.watch(selectedStatusesProvider);
 
   return service.getTasksByStatus('To Do').map((tasks) {
-    return filterTasks(tasks, selectedPriorities, {});
+    return filterTasks(tasks, selectedPriorities, selectedStatuses);
   });
 });
 
@@ -37,9 +38,10 @@ final todoTasksProvider = StreamProvider<List<TaskModel>>((ref) {
 final inProgressTasksProvider = StreamProvider<List<TaskModel>>((ref) {
   final service = ref.watch(firebaseTodoServiceProvider);
   final selectedPriorities = ref.watch(selectedPrioritiesProvider);
+  final selectedStatuses = ref.watch(selectedStatusesProvider);
 
   return service.getTasksByStatus('In Progress').map((tasks) {
-    return filterTasks(tasks, selectedPriorities, {});
+    return filterTasks(tasks, selectedPriorities, selectedStatuses);
   });
 });
 
@@ -47,9 +49,10 @@ final inProgressTasksProvider = StreamProvider<List<TaskModel>>((ref) {
 final completedTasksProvider = StreamProvider<List<TaskModel>>((ref) {
   final service = ref.watch(firebaseTodoServiceProvider);
   final selectedPriorities = ref.watch(selectedPrioritiesProvider);
+  final selectedStatuses = ref.watch(selectedStatusesProvider);
 
   return service.getTasksByStatus('Completed').map((tasks) {
-    return filterTasks(tasks, selectedPriorities, {});
+    return filterTasks(tasks, selectedPriorities, selectedStatuses);
   });
 });
 

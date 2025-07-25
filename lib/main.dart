@@ -9,8 +9,6 @@ import 'package:to_do_web_app/firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Check if Firebase is already initialized
   if (Firebase.apps.isEmpty) {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform.copyWith(
@@ -18,7 +16,6 @@ void main() async {
       ),
     );
   }
-
   runApp(const ProviderScope(child: MyApp()));
 }
 
