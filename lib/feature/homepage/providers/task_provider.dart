@@ -23,22 +23,48 @@ final tasksByStatusProvider = StreamProvider.family<List<TaskModel>, String>((
   return service.getTasksByStatus(status);
 });
 
-// Provider for todo tasks
+// Provider for todo tasks with filtering
 final todoTasksProvider = StreamProvider<List<TaskModel>>((ref) {
   final service = ref.watch(firebaseTodoServiceProvider);
-  return service.getTasksByStatus('To Do');
+  final selectedPriorities = ref.watch(selectedPrioritiesProvider);
+  final selectedStatuses = ref.watch(selectedStatusesProvider);
+
+  return service.getTasksByStatus('To Do').map((tasks) {
+    return filterTasks(tasks, selectedPriorities, selectedStatuses);
+  });
 });
 
-// Provider for in progress tasks
+// Provider for in progress tasks with filtering
 final inProgressTasksProvider = StreamProvider<List<TaskModel>>((ref) {
   final service = ref.watch(firebaseTodoServiceProvider);
-  return service.getTasksByStatus('In Progress');
+  final selectedPriorities = ref.watch(selectedPrioritiesProvider);
+  final selectedStatuses = ref.watch(selectedStatusesProvider);
+
+  return service.getTasksByStatus('In Progress').map((tasks) {
+    return filterTasks(tasks, selectedPriorities, selectedStatuses);
+  });
 });
 
-// Provider for completed tasks
+// Provider for completed tasks with filtering
 final completedTasksProvider = StreamProvider<List<TaskModel>>((ref) {
   final service = ref.watch(firebaseTodoServiceProvider);
-  return service.getTasksByStatus('Completed');
+  final selectedPriorities = ref.watch(selectedPrioritiesProvider);
+  final selectedStatuses = ref.watch(selectedStatusesProvider);
+
+  return service.getTasksByStatus('Completed').map((tasks) {
+    return filterTasks(tasks, selectedPriorities, selectedStatuses);
+  });
+});
+
+// NEW: Provider for filtered tasks across all statuses
+final filteredTasksProvider = StreamProvider<List<TaskModel>>((ref) {
+  final service = ref.watch(firebaseTodoServiceProvider);
+  final selectedPriorities = ref.watch(selectedPrioritiesProvider);
+  final selectedStatuses = ref.watch(selectedStatusesProvider);
+
+  return service.getTasks().map((tasks) {
+    return filterTasks(tasks, selectedPriorities, selectedStatuses);
+  });
 });
 
 // Task actions provider
@@ -98,3 +124,80 @@ class TaskActions {
     await _service.deleteTask(taskId);
   }
 }
+
+// Simple filter state
+final selectedPrioritiesProvider = StateProvider<Set<String>>((ref) => {});
+final selectedStatusesProvider = StateProvider<Set<String>>((ref) => {});
+
+// UPDATED: Helper function to filter tasks
+List<TaskModel> filterTasks(
+  List<TaskModel> tasks,
+  Set<String> priorities,
+  Set<String> statuses,
+) {
+  var filteredTasks = tasks;
+
+  // Filter by priority if any selected
+  if (priorities.isNotEmpty) {
+    filteredTasks = filteredTasks.where((task) {
+      return task.priority != null && priorities.contains(task.priority);
+    }).toList();
+  }
+
+  // Filter by status if any selected
+  if (statuses.isNotEmpty) {
+    filteredTasks = filteredTasks.where((task) {
+      return statuses.contains(task.status);
+    }).toList();
+  }
+
+  return filteredTasks;
+}
+
+// Simple filter actions
+class SimpleFilterActions {
+  final Ref ref;
+  SimpleFilterActions(this.ref);
+
+  void togglePriority(String priority) {
+    final current = ref.read(selectedPrioritiesProvider);
+    final updated = Set<String>.from(current);
+
+    if (updated.contains(priority)) {
+      updated.remove(priority);
+    } else {
+      updated.add(priority);
+    }
+
+    ref.read(selectedPrioritiesProvider.notifier).state = updated;
+  }
+
+  void clearPriorityFilters() {
+    ref.read(selectedPrioritiesProvider.notifier).state = {};
+  }
+
+  void clearAllFilters() {
+    ref.read(selectedPrioritiesProvider.notifier).state = {};
+    ref.read(selectedStatusesProvider.notifier).state = {};
+  }
+
+  // Status filter actions
+  void toggleStatus(String status) {
+    final current = ref.read(selectedStatusesProvider);
+    final updated = Set<String>.from(current);
+
+    if (updated.contains(status)) {
+      updated.remove(status);
+    } else {
+      updated.add(status);
+    }
+
+    ref.read(selectedStatusesProvider.notifier).state = updated;
+  }
+
+  void clearStatusFilters() {
+    ref.read(selectedStatusesProvider.notifier).state = {};
+  }
+}
+
+final simpleFilterActionsProvider = Provider((ref) => SimpleFilterActions(ref));

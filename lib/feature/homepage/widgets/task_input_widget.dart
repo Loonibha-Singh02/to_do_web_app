@@ -119,6 +119,7 @@ class _TaskInputWidgetState extends State<TaskInputWidget> {
                       setState(() => _startDate = date);
                     }),
                   ),
+                  PopupMenuDivider(),
                   PopupMenuItem(
                     child: _buildDatePickerField('Due Date', _dueDate, (date) {
                       setState(() => _dueDate = date);

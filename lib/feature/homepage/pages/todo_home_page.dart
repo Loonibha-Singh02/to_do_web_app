@@ -11,6 +11,8 @@ import 'package:to_do_web_app/core/widgets/button_widget.dart';
 import 'package:to_do_web_app/feature/homepage/controllers/board_controllers.dart';
 import 'package:to_do_web_app/feature/homepage/providers/task_provider.dart';
 import 'package:to_do_web_app/feature/firebase/models/task_model.dart';
+import 'package:to_do_web_app/feature/homepage/widgets/priority_filter_widget.dart';
+import 'package:to_do_web_app/feature/homepage/widgets/status_filter_widget.dart';
 import 'package:to_do_web_app/feature/homepage/widgets/task_input_widget.dart';
 
 class TodoWidgets extends ConsumerStatefulWidget {
@@ -38,6 +40,7 @@ class _TodoWidgetsState extends ConsumerState<TodoWidgets> {
 
   Widget _buildShimmerCard() {
     return Shimmer.fromColors(
+      key: UniqueKey(),
       baseColor: Colors.grey.shade300,
       highlightColor: Colors.grey.shade100,
       child: Container(
@@ -55,6 +58,8 @@ class _TodoWidgetsState extends ConsumerState<TodoWidgets> {
 
   @override
   Widget build(BuildContext context) {
+    final selectedPriorities = ref.watch(selectedPrioritiesProvider);
+
     ref.listen(todoTasksProvider, (previous, next) {
       next.whenData((tasks) {
         boardController.updateGroupWithTasks('To Do', tasks);
@@ -74,7 +79,18 @@ class _TodoWidgetsState extends ConsumerState<TodoWidgets> {
     });
 
     return Scaffold(
-      appBar: AppBar(title: const Text('To Do Board')),
+      appBar: AppBar(
+        title: const Text('To Do Board'),
+        actions: [
+          Row(
+            children: [
+              PriorityFilterWidget(),
+              const AppSpacerWidget(width: 12),
+              StatusFilterWidget(),
+            ],
+          ),
+        ],
+      ),
       body: Padding(
         padding: const EdgeInsets.all(10),
         child: AppFlowyBoard(
@@ -94,8 +110,17 @@ class _TodoWidgetsState extends ConsumerState<TodoWidgets> {
 
             return tasksAsync.when(
               loading: () => _buildShimmerCard(),
-              error: (_, __) => const SizedBox.shrink(),
-              data: (_) {
+              error: (_, __) => SizedBox.shrink(
+                key: ValueKey(
+                  'error_${group.id}_${DateTime.now().millisecondsSinceEpoch}',
+                ),
+              ),
+              data: (tasks) {
+                // Show "No Data" card if no tasks and filters are active
+                if (tasks.isEmpty && selectedPriorities.isNotEmpty) {
+                  return _buildNoDataCard(group.id);
+                }
+
                 if (groupItem is TaskItem) {
                   // Check if this task is being edited
                   if (boardController.isTaskBeingEdited(groupItem.task.id)) {
@@ -109,7 +134,11 @@ class _TodoWidgetsState extends ConsumerState<TodoWidgets> {
                   }
                   return _buildTaskCard(groupItem.task);
                 }
-                return const SizedBox.shrink();
+                return SizedBox.shrink(
+                  key: ValueKey(
+                    'empty_${group.id}_${DateTime.now().millisecondsSinceEpoch}',
+                  ),
+                );
               },
             );
           },
@@ -215,6 +244,44 @@ class _TodoWidgetsState extends ConsumerState<TodoWidgets> {
         icon: Icons.add,
         iconColor: AppColor.primarySwatch.shade300,
         context: context,
+      ),
+    );
+  }
+
+  Widget _buildNoDataCard(String groupId) {
+    return AppFlowyGroupCard(
+      key: ValueKey('no_data_$groupId'),
+      decoration: const BoxDecoration(color: Colors.transparent),
+      child: Container(
+        width: 280,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.grey.shade50,
+          borderRadius: BorderRadius.circular(8.0),
+          border: Border.all(color: Colors.grey.shade200, width: 1),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.filter_list_off, size: 40, color: Colors.grey.shade400),
+            const SizedBox(height: 12),
+            Text(
+              'No tasks match the current filter',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey.shade600,
+                fontWeight: FontWeight.w500,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Try adjusting your filter settings',
+              style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
       ),
     );
   }
