@@ -11,6 +11,9 @@ class BoardController {
   // Track which groups have input forms open
   final Set<String> _groupsWithInputForms = <String>{};
 
+  // Track which tasks are being edited
+  final Map<String, TaskModel> _tasksBeingEdited = <String, TaskModel>{};
+
   // Track the currently dragged item
   TaskItem? _currentlyDraggedItem;
 
@@ -101,12 +104,12 @@ class BoardController {
 
   void showAddTaskForm(String groupId) {
     _groupsWithInputForms.add(groupId);
-    // Force rebuild of the widget to show the input form
-    // This will be handled by listening to this state in the widget
+    _currentlyDraggedItem = null;
   }
 
   void cancelAddTask(String groupId) {
     _groupsWithInputForms.remove(groupId);
+    _currentlyDraggedItem = null;
   }
 
   bool hasInputForm(String groupId) {
@@ -142,12 +145,59 @@ class BoardController {
     }
   }
 
+  // EDIT MODE METHODS
+  void startEditingTask(TaskModel task) {
+    _tasksBeingEdited[task.id] = task;
+  }
+
+  void cancelEditTask(String taskId) {
+    _tasksBeingEdited.remove(taskId);
+    _currentlyDraggedItem = null;
+  }
+
+  bool isTaskBeingEdited(String taskId) {
+    return _tasksBeingEdited.containsKey(taskId);
+  }
+
+  TaskModel? getTaskBeingEdited(String taskId) {
+    return _tasksBeingEdited[taskId];
+  }
+
   Future<void> deleteTask(String taskId) async {
     try {
       final taskActions = ref.read(taskActionsProvider);
       await taskActions.deleteTask(taskId);
     } catch (error) {
       debugPrint('Error deleting task: $error');
+      rethrow;
+    }
+  }
+
+  Future<void> updateTask({
+    required String taskId,
+    required String title,
+    DateTime? startDate,
+    DateTime? dueDate,
+    String? desc,
+    String? priority,
+  }) async {
+    if (title.trim().isEmpty) return;
+
+    try {
+      final taskActions = ref.read(taskActionsProvider);
+      await taskActions.updateTask(
+        taskId: taskId,
+        title: title.trim(),
+        startDate: startDate,
+        desc: desc,
+        dueDate: dueDate,
+        priority: priority,
+      );
+
+      // Remove from editing state
+      cancelEditTask(taskId);
+    } catch (error) {
+      debugPrint('Error updating task: $error');
       rethrow;
     }
   }

@@ -7,15 +7,20 @@ import 'package:to_do_web_app/core/widgets/app_spacer_widgets.dart';
 import 'package:to_do_web_app/core/widgets/button_widget.dart';
 import 'package:to_do_web_app/core/widgets/pop_up_menu_widget.dart';
 import 'package:to_do_web_app/feature/homepage/controllers/board_controllers.dart';
+import 'package:to_do_web_app/feature/firebase/models/task_model.dart';
 
 class TaskInputWidget extends StatefulWidget {
   final String groupId;
   final BoardController boardController;
+  final TaskModel? taskToEdit;
+  final bool isEditMode;
 
   const TaskInputWidget({
     super.key,
     required this.groupId,
     required this.boardController,
+    this.taskToEdit,
+    this.isEditMode = false,
   });
 
   @override
@@ -31,6 +36,23 @@ class _TaskInputWidgetState extends State<TaskInputWidget> {
   bool _isLoading = false;
 
   @override
+  void initState() {
+    super.initState();
+    _initializeFields();
+  }
+
+  void _initializeFields() {
+    if (widget.isEditMode && widget.taskToEdit != null) {
+      final task = widget.taskToEdit!;
+      _titleController.text = task.title;
+      _descriptionController.text = task.desc ?? '';
+      _startDate = task.startDate;
+      _dueDate = task.dueDate;
+      _priority = task.priority;
+    }
+  }
+
+  @override
   void dispose() {
     _titleController.dispose();
     _descriptionController.dispose();
@@ -40,7 +62,9 @@ class _TaskInputWidgetState extends State<TaskInputWidget> {
   @override
   Widget build(BuildContext context) {
     return AppFlowyGroupCard(
-      key: ValueKey('task_input_${widget.groupId}'),
+      key: ValueKey(
+        'task_input_${widget.groupId}_${widget.isEditMode ? widget.taskToEdit?.id : 'new'}',
+      ),
       decoration: const BoxDecoration(color: Colors.transparent),
       child: Container(
         decoration: BoxDecoration(
@@ -67,10 +91,8 @@ class _TaskInputWidgetState extends State<TaskInputWidget> {
                       onFieldSubmitted: (_) => _saveTask(),
                     ),
                   ),
-
                   IconButton(
-                    onPressed: () =>
-                        widget.boardController.cancelAddTask(widget.groupId),
+                    onPressed: _cancelAction,
                     icon: Icon(
                       Icons.close,
                       size: 15,
@@ -82,8 +104,7 @@ class _TaskInputWidgetState extends State<TaskInputWidget> {
               buildTextField(
                 controller: _descriptionController,
                 hintText: 'Description....',
-                autofocus: true,
-                // uses default OutlineInputBorder
+                autofocus: false,
                 onFieldSubmitted: (_) => _saveTask(),
               ),
               AppSpacerWidget(),
@@ -105,9 +126,9 @@ class _TaskInputWidgetState extends State<TaskInputWidget> {
                   ),
                 ],
                 icon: Icons.calendar_today,
-                text: 'Dates',
+                text: _getDateText(),
               ),
-              // Priority picker
+              AppSpacerWidget(),
               PopUpMenuWidget(
                 tooltip: 'Set Priority',
                 onSelected: (value) {
@@ -168,7 +189,9 @@ class _TaskInputWidgetState extends State<TaskInputWidget> {
                 width: double.infinity,
                 child: ButtonWidget(
                   onPressed: _isLoading ? null : _saveTask,
-                  label: _isLoading ? 'Saving...' : 'Save Task',
+                  label: _isLoading
+                      ? (widget.isEditMode ? 'Updating...' : 'Saving...')
+                      : (widget.isEditMode ? 'Update Task' : 'Save Task'),
                 ),
               ),
             ],
@@ -176,6 +199,25 @@ class _TaskInputWidgetState extends State<TaskInputWidget> {
         ),
       ),
     );
+  }
+
+  String _getDateText() {
+    if (_startDate != null && _dueDate != null) {
+      return '${DateFormat('yyyy MMM dd ').format(_startDate!)} - ${DateFormat('yyyy MMM dd').format(_dueDate!)}';
+    } else if (_startDate != null) {
+      return 'Start: ${DateFormat('MMM dd').format(_startDate!)}';
+    } else if (_dueDate != null) {
+      return 'Due: ${DateFormat('MMM dd').format(_dueDate!)}';
+    }
+    return 'Dates';
+  }
+
+  void _cancelAction() {
+    if (widget.isEditMode) {
+      widget.boardController.cancelEditTask(widget.taskToEdit!.id);
+    } else {
+      widget.boardController.cancelAddTask(widget.groupId);
+    }
   }
 
   Widget buildTextField({
@@ -264,19 +306,32 @@ class _TaskInputWidgetState extends State<TaskInputWidget> {
     setState(() => _isLoading = true);
 
     try {
-      await widget.boardController.saveNewTask(
-        groupId: widget.groupId,
-        title: title,
-        startDate: _startDate,
-        desc: _descriptionController.text.trim(),
-        dueDate: _dueDate,
-        priority: _priority,
-      );
+      if (widget.isEditMode) {
+        await widget.boardController.updateTask(
+          taskId: widget.taskToEdit!.id,
+          title: title,
+          startDate: _startDate,
+          desc: _descriptionController.text.trim(),
+          dueDate: _dueDate,
+          priority: _priority,
+        );
+      } else {
+        await widget.boardController.saveNewTask(
+          groupId: widget.groupId,
+          title: title,
+          startDate: _startDate,
+          desc: _descriptionController.text.trim(),
+          dueDate: _dueDate,
+          priority: _priority,
+        );
+      }
     } catch (error) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error creating task: $error'),
+            content: Text(
+              'Error ${widget.isEditMode ? 'updating' : 'creating'} task: $error',
+            ),
             backgroundColor: AppColor.errorSwatch.shade700,
           ),
         );

@@ -3,13 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:to_do_web_app/core/constants/app_color.dart';
 import 'package:to_do_web_app/core/constants/app_constants.dart';
 import 'package:to_do_web_app/core/widgets/app_spacer_widgets.dart';
 import 'package:to_do_web_app/core/widgets/button_widget.dart';
 import 'package:to_do_web_app/feature/homepage/controllers/board_controllers.dart';
 import 'package:to_do_web_app/feature/homepage/providers/task_provider.dart';
-
 import 'package:to_do_web_app/feature/firebase/models/task_model.dart';
 import 'package:to_do_web_app/feature/homepage/widgets/task_input_widget.dart';
 
@@ -36,9 +36,25 @@ class _TodoWidgetsState extends ConsumerState<TodoWidgets> {
     super.dispose();
   }
 
+  Widget _buildShimmerCard() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey.shade300,
+      highlightColor: Colors.grey.shade100,
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 8),
+        width: 280,
+        height: 80,
+        decoration: BoxDecoration(
+          color: Colors.grey.shade300,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.grey.shade200, width: 1),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Listen to task streams and update the board
     ref.listen(todoTasksProvider, (previous, next) {
       next.whenData((tasks) {
         boardController.updateGroupWithTasks('To Do', tasks);
@@ -70,11 +86,32 @@ class _TodoWidgetsState extends ConsumerState<TodoWidgets> {
           headerBuilder: (context, group) => _buildHeader(group),
           footerBuilder: (context, group) => _buildFooter(context, group),
           cardBuilder: (context, group, groupItem) {
-            if (groupItem is TaskItem) {
-              return _buildTaskCard(groupItem.task);
-            }
-            // Return empty widget for any other items (shouldn't happen now)
-            return SizedBox.shrink(key: ValueKey('empty_${groupItem.id}'));
+            final tasksAsync = group.id == 'To Do'
+                ? ref.watch(todoTasksProvider)
+                : group.id == 'In Progress'
+                ? ref.watch(inProgressTasksProvider)
+                : ref.watch(completedTasksProvider);
+
+            return tasksAsync.when(
+              loading: () => _buildShimmerCard(),
+              error: (_, __) => const SizedBox.shrink(),
+              data: (_) {
+                if (groupItem is TaskItem) {
+                  // Check if this task is being edited
+                  if (boardController.isTaskBeingEdited(groupItem.task.id)) {
+                    return TaskInputWidget(
+                      key: ValueKey('edit_${groupItem.task.id}'),
+                      groupId: group.id,
+                      boardController: boardController,
+                      taskToEdit: groupItem.task,
+                      isEditMode: true,
+                    );
+                  }
+                  return _buildTaskCard(groupItem.task);
+                }
+                return const SizedBox.shrink();
+              },
+            );
           },
         ),
       ),
@@ -97,7 +134,7 @@ class _TodoWidgetsState extends ConsumerState<TodoWidgets> {
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
           const Spacer(),
-          // Show task count
+          // Count
           Consumer(
             builder: (context, ref, child) {
               final tasksAsync = group.id == 'To Do'
@@ -119,7 +156,14 @@ class _TodoWidgetsState extends ConsumerState<TodoWidgets> {
                     ),
                   ),
                 ),
-                loading: () => const SizedBox.shrink(),
+                loading: () => Shimmer.fromColors(
+                  baseColor: Colors.grey.shade300,
+                  highlightColor: Colors.grey.shade100,
+                  child: CircleAvatar(
+                    backgroundColor: Colors.grey.shade300,
+                    radius: 12.spMin,
+                  ),
+                ),
                 error: (_, __) => const SizedBox.shrink(),
               );
             },
@@ -134,7 +178,6 @@ class _TodoWidgetsState extends ConsumerState<TodoWidgets> {
       key: ValueKey('footer_${group.id}'),
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Show input form if this group has an input form open
         if (boardController.hasInputForm(group.id))
           Padding(
             key: ValueKey('input_padding_${group.id}'),
@@ -145,7 +188,6 @@ class _TodoWidgetsState extends ConsumerState<TodoWidgets> {
               boardController: boardController,
             ),
           ),
-        // Add Task Button
         _buildAddTaskButtonCard(context, group),
       ],
     );
@@ -203,7 +245,6 @@ class _TodoWidgetsState extends ConsumerState<TodoWidgets> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Task title with delete button
               Row(
                 children: [
                   Expanded(
@@ -217,18 +258,33 @@ class _TodoWidgetsState extends ConsumerState<TodoWidgets> {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  IconButton(
-                    onPressed: () => _showDeleteConfirmation(task),
-                    icon: Icon(
-                      Icons.delete_outline,
-                      size: 18,
-                      color: AppColor.errorSwatch.shade900,
-                    ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        onPressed: () {
+                          setState(() {
+                            boardController.startEditingTask(task);
+                          });
+                        },
+                        icon: Icon(
+                          Icons.edit_outlined,
+                          size: 18,
+                          color: AppColor.primarySwatch.shade700,
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => _showDeleteConfirmation(task),
+                        icon: Icon(
+                          Icons.delete_outline,
+                          size: 18,
+                          color: AppColor.errorSwatch.shade900,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
-
-              //desc
               if (task.desc != null) ...[
                 const AppSpacerWidget(),
                 Text(
@@ -241,8 +297,6 @@ class _TodoWidgetsState extends ConsumerState<TodoWidgets> {
                   overflow: TextOverflow.ellipsis,
                 ),
               ],
-
-              // Priority indicator
               if (task.priority != null) ...[
                 const AppSpacerWidget(),
                 Row(
@@ -264,8 +318,6 @@ class _TodoWidgetsState extends ConsumerState<TodoWidgets> {
                   ],
                 ),
               ],
-
-              // Dates
               if (task.startDate != null || task.dueDate != null) ...[
                 const AppSpacerWidget(),
                 Row(
