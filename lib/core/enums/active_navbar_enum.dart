@@ -1,0 +1,1 @@
+enum ActiveNavbarEnum { home, settings }

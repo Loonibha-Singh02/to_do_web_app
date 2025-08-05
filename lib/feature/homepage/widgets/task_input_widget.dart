@@ -393,6 +393,7 @@ class _TaskInputWidgetState extends State<TaskInputWidget> {
           dueDate: _dueDate,
           priority: _priority,
         );
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -405,6 +406,9 @@ class _TaskInputWidgetState extends State<TaskInputWidget> {
               backgroundColor: AppColor.successSwatch.shade700,
             ),
           );
+
+          // Close the edit widget after successful update
+          widget.boardController.cancelEditTask(widget.taskToEdit!.id);
         }
       } else {
         await widget.boardController.saveNewTask(
@@ -415,6 +419,7 @@ class _TaskInputWidgetState extends State<TaskInputWidget> {
           dueDate: _dueDate,
           priority: _priority,
         );
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -427,6 +432,7 @@ class _TaskInputWidgetState extends State<TaskInputWidget> {
               backgroundColor: AppColor.successSwatch.shade700,
             ),
           );
+          Navigator.of(context).pop();
         }
       }
     } catch (error) {

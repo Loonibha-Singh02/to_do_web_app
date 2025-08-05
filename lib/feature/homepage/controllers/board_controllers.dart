@@ -5,6 +5,8 @@ import 'package:to_do_web_app/core/constants/app_color.dart';
 import 'package:to_do_web_app/feature/firebase/models/task_model.dart';
 import 'package:to_do_web_app/feature/homepage/providers/task_provider.dart';
 
+// UI → BoardController → TaskActions (Provider) → FirebaseTodoServices
+
 class BoardController {
   late final AppFlowyBoardController controller;
   final WidgetRef ref;
@@ -96,12 +98,12 @@ class BoardController {
     }
   }
 
-  void addNewTaskToGroup(String groupId, TaskModel task) {
-    final group = controller.getGroupController(groupId);
-    if (group != null) {
-      group.add(TaskItem(task));
-    }
-  }
+  // void addNewTaskToGroup(String groupId, TaskModel task) {
+  //   final group = controller.getGroupController(groupId);
+  //   if (group != null) {
+  //     group.add(TaskItem(task));
+  //   }
+  // }
 
   void showAddTaskForm(String groupId) {
     _groupsWithInputForms.add(groupId);

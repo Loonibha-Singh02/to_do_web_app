@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'package:appflowy_board/appflowy_board.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,17 +7,28 @@ import 'package:intl/intl.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:to_do_web_app/core/constants/app_color.dart';
 import 'package:to_do_web_app/core/constants/app_constants.dart';
+import 'package:to_do_web_app/core/enums/active_navbar_enum.dart';
+import 'package:to_do_web_app/core/utils/size_utils.dart';
 import 'package:to_do_web_app/core/widgets/app_spacer_widgets.dart';
 import 'package:to_do_web_app/core/widgets/button_widget.dart';
+import 'package:to_do_web_app/feature/firebase/models/task_model.dart';
 import 'package:to_do_web_app/feature/homepage/controllers/board_controllers.dart';
 import 'package:to_do_web_app/feature/homepage/providers/task_provider.dart';
-import 'package:to_do_web_app/feature/firebase/models/task_model.dart';
 import 'package:to_do_web_app/feature/homepage/widgets/priority_filter_widget.dart';
 import 'package:to_do_web_app/feature/homepage/widgets/status_filter_widget.dart';
 import 'package:to_do_web_app/feature/homepage/widgets/task_input_widget.dart';
+import 'package:to_do_web_app/feature/siderbar/pages/mobile_side_bar_widget.dart';
+// ... your other imports
 
 class TodoHomePage extends ConsumerStatefulWidget {
-  const TodoHomePage({super.key});
+  const TodoHomePage({
+    super.key,
+    required this.activeNavbarItem,
+    required this.onNavItemSelected,
+  });
+
+  final ActiveNavbarEnum activeNavbarItem;
+  final Function(String route) onNavItemSelected;
 
   @override
   ConsumerState<TodoHomePage> createState() => _TodoHomePageState();
@@ -24,45 +36,110 @@ class TodoHomePage extends ConsumerStatefulWidget {
 
 class _TodoHomePageState extends ConsumerState<TodoHomePage> {
   late final BoardController boardController;
+  bool _isInitialized = false;
 
   @override
   void initState() {
     super.initState();
-    boardController = BoardController(ref);
-    boardController.initializeBoard();
+    _initializeController();
+    // Set up listeners after initialization
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _setupListeners();
+    });
+  }
+
+  void _initializeController() {
+    if (!_isInitialized) {
+      boardController = BoardController(ref);
+      boardController.initializeBoard();
+      _isInitialized = true;
+    }
+  }
+
+  void _setupListeners() {
+    if (!_isInitialized) return;
+
+    // Force initial data load
+    _updateBoardWithCurrentData();
+  }
+
+  void _updateBoardWithCurrentData() {
+    // Get current data and update board
+    final todoTasks = ref.read(todoTasksProvider);
+    final inProgressTasks = ref.read(inProgressTasksProvider);
+    final completedTasks = ref.read(completedTasksProvider);
+
+    todoTasks.whenData((tasks) {
+      log("Initial 'To Do' tasks: ${tasks.length}");
+      boardController.updateGroupWithTasks('To Do', tasks);
+    });
+
+    inProgressTasks.whenData((tasks) {
+      log("Initial 'In Progress' tasks: ${tasks.length}");
+      boardController.updateGroupWithTasks('In Progress', tasks);
+    });
+
+    completedTasks.whenData((tasks) {
+      log("Initial 'Completed' tasks: ${tasks.length}");
+      boardController.updateGroupWithTasks('Completed', tasks);
+    });
   }
 
   @override
   void dispose() {
-    boardController.dispose();
+    log("TodoHomePage disposing");
+    if (_isInitialized) {
+      boardController.dispose();
+    }
     super.dispose();
+  }
+
+  void _onMobileNavItemSelected(String route) {
+    log("Mobile nav selected: $route");
+    widget.onNavItemSelected(route);
   }
 
   @override
   Widget build(BuildContext context) {
+    log("TodoHomePage build called - isInitialized: $_isInitialized");
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isDesktop = SizeUtils.getLayoutMode() == LayoutMode.desktop;
 
     // Riverpod listeners that update the board when task data changes
-    // These ensure the UI stays in sync with the backend data
     ref.listen(todoTasksProvider, (previous, next) {
-      next.whenData((tasks) {
-        boardController.updateGroupWithTasks('To Do', tasks);
-      });
+      if (_isInitialized) {
+        next.whenData((tasks) {
+          log("Updating 'To Do' tasks: ${tasks.length}");
+          boardController.updateGroupWithTasks('To Do', tasks);
+        });
+      }
     });
 
     ref.listen(inProgressTasksProvider, (previous, next) {
-      next.whenData((tasks) {
-        boardController.updateGroupWithTasks('In Progress', tasks);
-      });
+      if (_isInitialized) {
+        next.whenData((tasks) {
+          log("Updating 'In Progress' tasks: ${tasks.length}");
+          boardController.updateGroupWithTasks('In Progress', tasks);
+        });
+      }
     });
 
     ref.listen(completedTasksProvider, (previous, next) {
-      next.whenData((tasks) {
-        boardController.updateGroupWithTasks('Completed', tasks);
-      });
+      if (_isInitialized) {
+        next.whenData((tasks) {
+          log("Updating 'Completed' tasks: ${tasks.length}");
+          boardController.updateGroupWithTasks('Completed', tasks);
+        });
+      }
     });
 
     return Scaffold(
+      drawer: isDesktop
+          ? null
+          : MobileSidebarWidget(
+              activeNavbarItem: widget.activeNavbarItem,
+              onItemSelected: _onMobileNavItemSelected,
+            ),
       appBar: AppBar(
         title: Text(
           'To Do Board',
@@ -86,56 +163,62 @@ class _TodoHomePageState extends ConsumerState<TodoHomePage> {
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(10),
-        child: AppFlowyBoard(
-          controller: boardController.controller,
-          groupConstraints: const BoxConstraints(minWidth: 300, maxWidth: 300),
-          config: AppFlowyBoardConfig(
-            groupBackgroundColor: isDark
-                ? AppColor.onDarkSwatch.shade100
-                : AppColor.secondarySwatch.shade50,
-          ),
-          headerBuilder: (context, group) => _buildHeader(group),
-          footerBuilder: (context, group) => _buildFooter(context, group),
-          cardBuilder: (context, group, groupItem) {
-            final tasksAsync = group.id == 'To Do'
-                ? ref.watch(todoTasksProvider)
-                : group.id == 'In Progress'
-                ? ref.watch(inProgressTasksProvider)
-                : ref.watch(completedTasksProvider);
-
-            return tasksAsync.when(
-              loading: () => _buildShimmerCard(),
-              error: (_, __) => SizedBox.shrink(
-                key: ValueKey(
-                  'error_${group.id}_${DateTime.now().millisecondsSinceEpoch}',
+      body: _isInitialized
+          ? Padding(
+              padding: const EdgeInsets.all(10),
+              child: AppFlowyBoard(
+                controller: boardController.controller,
+                groupConstraints: const BoxConstraints(
+                  minWidth: 300,
+                  maxWidth: 300,
                 ),
+                config: AppFlowyBoardConfig(
+                  groupBackgroundColor: isDark
+                      ? AppColor.onDarkSwatch.shade100
+                      : AppColor.secondarySwatch.shade50,
+                ),
+                headerBuilder: (context, group) => _buildHeader(group),
+                footerBuilder: (context, group) => _buildFooter(context, group),
+                cardBuilder: (context, group, groupItem) {
+                  final tasksAsync = group.id == 'To Do'
+                      ? ref.watch(todoTasksProvider)
+                      : group.id == 'In Progress'
+                      ? ref.watch(inProgressTasksProvider)
+                      : ref.watch(completedTasksProvider);
+
+                  return tasksAsync.when(
+                    loading: () => _buildShimmerCard(),
+                    error: (_, __) => SizedBox.shrink(
+                      key: ValueKey(
+                        'error_${group.id}_${DateTime.now().millisecondsSinceEpoch}',
+                      ),
+                    ),
+                    data: (tasks) {
+                      if (groupItem is TaskItem) {
+                        if (boardController.isTaskBeingEdited(
+                          groupItem.task.id,
+                        )) {
+                          return TaskInputWidget(
+                            key: ValueKey('edit_${groupItem.task.id}'),
+                            groupId: group.id,
+                            boardController: boardController,
+                            taskToEdit: groupItem.task,
+                            isEditMode: true,
+                          );
+                        }
+                        return _buildTaskCard(groupItem.task);
+                      }
+                      return SizedBox.shrink(
+                        key: ValueKey(
+                          'empty_${group.id}_${DateTime.now().millisecondsSinceEpoch}',
+                        ),
+                      );
+                    },
+                  );
+                },
               ),
-              data: (tasks) {
-                if (groupItem is TaskItem) {
-                  // Check if this task is being edited
-                  if (boardController.isTaskBeingEdited(groupItem.task.id)) {
-                    return TaskInputWidget(
-                      key: ValueKey('edit_${groupItem.task.id}'),
-                      groupId: group.id,
-                      boardController: boardController,
-                      taskToEdit: groupItem.task,
-                      isEditMode: true,
-                    );
-                  }
-                  return _buildTaskCard(groupItem.task);
-                }
-                return SizedBox.shrink(
-                  key: ValueKey(
-                    'empty_${group.id}_${DateTime.now().millisecondsSinceEpoch}',
-                  ),
-                );
-              },
-            );
-          },
-        ),
-      ),
+            )
+          : const Center(child: CircularProgressIndicator()),
     );
   }
 
